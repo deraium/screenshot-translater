@@ -38,17 +38,23 @@ datas = read_datas()
 
 
 def translate(text: str):
-    text = text.replace(" ", "+")
+    lines = text.replace(" ", "+").splitlines()
+    text = "%0A".join(lines)
     datas["sourceText"] = html.escape(text)
     request = requests.post(
         url, data=write_datas(datas).encode("utf-8"), headers=headers
     )
     request.raise_for_status()
     return_datas = json.loads(request.text)
-    results = ""
     try:
+        results = []
         for result in return_datas["translate"]["records"]:
-            results += f"{html.unescape(result['targetText'])}\n"
-        return results
-    except:
+            result = result["targetText"].strip()
+            if len(result) == 0:
+                continue
+            print(result)
+            results.append(result)
+        return "\n".join(results)
+    except Exception as e:
+        print(e)
         return ""

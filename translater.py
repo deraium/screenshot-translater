@@ -1,6 +1,7 @@
 import requests
 import json
 import urllib.parse
+import html
 import time
 import re
 
@@ -63,7 +64,7 @@ def translate(text: str):
     try:
         results = []
         for result in return_datas["translate"]["records"]:
-            result = result["targetText"].strip()
+            result = html.unescape(result["targetText"].strip())
             if len(result) == 0:
                 continue
             results.append(result)

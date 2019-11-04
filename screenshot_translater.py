@@ -39,12 +39,38 @@ def translate_screenshot():
     img = Image.fromarray(rgb_screen_array)
     region = capture.select_from_image(img)
     if region != None:
-        img_array = crop(screen_array, region)
-        text = pytesseract.image_to_string(img_array)
+        width = region[2] - region[0]
+        height = region[3] - region[1]
+        rect_area = width * height
+        half_rect_area = rect_area // 2
+        img = crop(screen_array, region)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        retval, img_1 = cv2.threshold(img, 63, 255, cv2.THRESH_BINARY)
+        retval, img_3 = cv2.threshold(img, 191, 255, cv2.THRESH_BINARY)
+        count_1 = cv2.countNonZero(img_1)
+        reverse_1 = False
+        if count_1 < half_rect_area:
+            reverse_1 = True
+            count_1 = rect_area - count_1
+        count_3 = cv2.countNonZero(img_3)
+        reverse_3 = False
+        if count_3 < half_rect_area:
+            reverse_3 = True
+            count_3 = rect_area - count_3
+        if count_1 < count_3:
+            img = img_1
+            reverse = reverse_1
+        else:
+            img = img_3
+            reverse = reverse_3
+        if reverse:
+            img = 255 - img
+        text = pytesseract.image_to_string(img)
         result = translater.translate(text)
         show_translate_box(result, text)
 
-print('复制需要翻译的文本，或者按Ctrl+>截屏并选取需要翻译的区域')
+
+print("复制需要翻译的文本，或者按Ctrl+>截屏并选取需要翻译的区域")
 while True:
     time.sleep(0.01)
     text = pyperclip.paste()

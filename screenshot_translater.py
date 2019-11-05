@@ -33,7 +33,7 @@ def show_translate_box(text, origin=None):
         previous_text = text
 
 
-def translate_screenshot():
+def translate_screenshot(get_new_key):
     screen_array = screen.grab()
     rgb_screen_array = cv2.cvtColor(screen_array, cv2.COLOR_BGR2RGB)
     img = Image.fromarray(rgb_screen_array)
@@ -66,13 +66,21 @@ def translate_screenshot():
         if reverse:
             img = 255 - img
         text = pytesseract.image_to_string(img)
-        result = translater.translate(text)
+        result = translater.translate(text, get_new_key)
         show_translate_box(result, text)
 
+
+refresh_key_time = 60.0
+refresh_time_remain = refresh_key_time
+get_new_key = False
 
 print("复制需要翻译的文本，或者按Ctrl+>截屏并选取需要翻译的区域")
 while True:
     time.sleep(0.01)
+    if not get_new_key:
+        refresh_time_remain -= 0.01
+        if refresh_time_remain <= 0.0:
+            get_new_key = True
     text = pyperclip.paste()
     if text != previous_text:
         previous_text = text
@@ -87,4 +95,7 @@ while True:
     previous_key_status = True
     if not keyboard.check(keyboard.VK_CODE["left_control"]):
         continue
-    translate_screenshot()
+    translate_screenshot(get_new_key)
+    if get_new_key:
+        get_new_key = False
+        refresh_time_remain = refresh_key_time

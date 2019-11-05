@@ -48,7 +48,10 @@ qtv, qtk = get_qt_datas()
 datas = {}
 
 
-def translate(text: str):
+def translate(text: str, get_new_key=False):
+    global qtv, qtk
+    if get_new_key:
+        qtv, qtk = get_qt_datas()
     datas["source"] = "auto"
     datas["target"] = "zh"
     datas["sourceText"] = text
